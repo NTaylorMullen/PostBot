@@ -1,8 +1,7 @@
 ﻿namespace PostBot.Configuration
 {
-    public class StackOverflowConfiguration
+    public class StackOverflowConfiguration : MonitorConfiguration
     {
-        public bool Enabled { get; set; }
         public string Endpoint { get; set; }
         public string Tag { get; set; }
     }

@@ -5,16 +5,12 @@
     "copyToOutput": [ "appsettings.json" ]
   },
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.0.0-rc2-*"
-    },
     "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Configuration.Binder": "1.0.0-rc2-final"
+    "Microsoft.Extensions.Configuration.Binder": "1.0.0-rc2-final",
+    "Octokit": "0.19.0"
   },
   "frameworks": {
-    "netcoreapp1.0": {
-      "imports": "dnxcore50"
+    "net451": {
     }
   }
 }
