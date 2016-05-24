@@ -1,4 +1,5 @@
 {
+  "userSecretsId": "PostBot-58cfa5b3-193f-4d48-ab59-495b35bde17b",
   "version": "1.0.0-*",
   "buildOptions": {
     "emitEntryPoint": true,
@@ -7,10 +8,17 @@
   "dependencies": {
     "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-final",
     "Microsoft.Extensions.Configuration.Binder": "1.0.0-rc2-final",
-    "Octokit": "0.19.0"
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-rc2-final",
+    "Octokit.Reactive": "0.19.0"
   },
   "frameworks": {
     "net451": {
+    }
+  },
+  "tools": {
+    "Microsoft.Extensions.SecretManager.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": "portable-net45+win8+dnxcore50"
     }
   }
 }

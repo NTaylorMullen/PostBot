@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using PostBot.Configuration;
+using PostBot.Monitors.GitHub;
 
 namespace ConsoleApplication
 {
@@ -10,9 +12,13 @@ namespace ConsoleApplication
         {
             var configuration = new Configuration();
             new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
+                .AddUserSecrets()
                 .Build()
                 .Bind(configuration);
+
+            Console.ReadLine();
         }
     }
 }

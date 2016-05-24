@@ -7,18 +7,31 @@ namespace PostBot.Monitors
     public abstract class Monitor
     {
         private readonly Timer _timer;
+        private int _polling;
 
         public Monitor(MonitorConfiguration configuration)
         {
             var pollPeriod = TimeSpan.FromMilliseconds(configuration.PollPeriod);
-            _timer = new Timer(Poll, state: null, dueTime: TimeSpan.Zero, period: pollPeriod);
+            _timer = new Timer(Poll, state: null, dueTime: TimeSpan.FromSeconds(1), period: pollPeriod);
         }
 
         protected abstract void Poll();
 
         private void Poll(object state)
         {
-            Poll();
+            try
+            {
+                if (Interlocked.Exchange(ref _polling, 1) == 1)
+                {
+                    return;
+                }
+
+                Poll();
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _polling, 0);
+            }
         }
     }
 }
