@@ -18,6 +18,8 @@ namespace ConsoleApplication
                 .Build()
                 .Bind(configuration);
 
+            var monitor = new GitHubMonitor(configuration.GitHub);
+
             Console.ReadLine();
         }
     }
