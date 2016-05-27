@@ -84,7 +84,8 @@ namespace PostBot.Monitors.GitHub
                     {
                         var commit = pushPayload.Commits[0];
                         var commitMessage = commit.Message.Split('\r', '\n')[0];
-                        attachmentText = $"{textStart} pushed <{commit.Url}|commit> `{commitMessage}` to {branchLink}";
+                        var branchCommitUrl = "https://github.com/" + activity.Repo.Name + "/commit/" + commit.Sha;
+                        attachmentText = $"{textStart} pushed <{branchCommitUrl}|commit> `{commitMessage}` to {branchLink}";
                     }
 
                     return true;
