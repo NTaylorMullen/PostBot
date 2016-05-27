@@ -52,7 +52,7 @@ $@"-- Observed Activity --
 At: {value.CreatedAt.TimeOfDay}
 Repo: {value.Repo.Name}
 Name: {value.Actor.Login}
-From: {value.Type}");
+Type: {value.Type}");
 
             _observedActivities.Add(value);
         }
