@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using PostBot.Configuration;
+using PostBot.Posters;
 
 namespace PostBot.Monitors
 {
@@ -9,11 +10,15 @@ namespace PostBot.Monitors
         private readonly Timer _timer;
         private int _polling;
 
-        public Monitor(MonitorConfiguration configuration)
+        public Monitor(SlackClient client, MonitorConfiguration configuration)
         {
             var pollPeriod = TimeSpan.FromMilliseconds(configuration.PollPeriod);
             _timer = new Timer(Poll, state: null, dueTime: TimeSpan.FromSeconds(1), period: pollPeriod);
+
+            Client = client;
         }
+
+        protected SlackClient Client { get; }
 
         protected abstract void Poll();
 

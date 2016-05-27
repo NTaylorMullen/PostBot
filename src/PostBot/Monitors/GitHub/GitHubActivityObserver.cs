@@ -15,7 +15,7 @@ namespace PostBot.Monitors.GitHub
 
         public GitHubActivityObserver(
             ILogger logger,
-            SafeCancellationTokenSource cancellationToken, 
+            SafeCancellationTokenSource cancellationToken,
             DateTimeOffset lastObservation)
         {
             _logger = logger;

@@ -14,7 +14,6 @@ namespace PostBot.Monitors.GitHub
         public GitHubActivityProvider(ILogger logger)
         {
             _lastObservation = DateTime.UtcNow;
-            _lastObservation = _lastObservation.Subtract(TimeSpan.FromHours(4));
             _logger = logger;
         }
 
