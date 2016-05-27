@@ -11,7 +11,7 @@ namespace PostBot.Monitors.GitHub
     {
         private readonly ObservableActivitiesClient _client;
         private readonly GithubConfiguration _configuration;
-        private readonly GitHubActivityProvider _eventObserver;
+        private readonly GitHubActivityProvider _activityObserver;
         private readonly GitHubSlackMessageProvider _slackMessageProvider;
 
         public GitHubMonitor(SlackClient client, GithubConfiguration configuration)
@@ -27,7 +27,7 @@ namespace PostBot.Monitors.GitHub
             _client = new ObservableActivitiesClient(gitHubClient);
 
             var logger = new ConsoleLogger("GitHub", (name, level) => true, includeScopes: true);
-            _eventObserver = new GitHubActivityProvider(logger);
+            _activityObserver = new GitHubActivityProvider(logger);
             _slackMessageProvider = new GitHubSlackMessageProvider(logger, configuration);
         }
 
@@ -35,7 +35,7 @@ namespace PostBot.Monitors.GitHub
         {
             var observable = _client.Events.GetAllForOrganization(_configuration.Organization);
 
-            var activities = _eventObserver.GetActivities(observable);
+            var activities = _activityObserver.GetActivities(observable);
             if (activities.Any())
             {
                 SlackMessage slackMessage;

@@ -25,7 +25,16 @@ namespace PostBot.Monitors.GitHub
             observable.Subscribe(activityObserver, cancellationToken.Token);
 
             cancellationToken.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(5));
-            _lastObservation = DateTime.UtcNow;
+
+            var observedActivities = activityObserver.ObservedActivities;
+            if (observedActivities.Count > 0)
+            {
+                _lastObservation = observedActivities[observedActivities.Count - 1].CreatedAt.AddMilliseconds(1);
+            }
+            else
+            {
+                _lastObservation = DateTime.UtcNow;
+            }
 
             return activityObserver.ObservedActivities;
         }

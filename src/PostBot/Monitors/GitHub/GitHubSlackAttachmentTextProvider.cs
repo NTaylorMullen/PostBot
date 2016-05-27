@@ -45,6 +45,12 @@ namespace PostBot.Monitors.GitHub
                 case "IssueCommentEvent":
                     var issueCommentEventPayload = activity.Payload as IssueCommentPayload;
 
+                    if (issueCommentEventPayload == null)
+                    {
+                        _logger.LogError("Payload was unrecognizable for IssueCommentEvent.");
+                        return false;
+                    }
+
                     if (issueCommentEventPayload.Issue.PullRequest != null)
                     {
                         attachmentText = $"{textStart} <{issueCommentEventPayload.Comment.HtmlUrl}|commented> on " +
@@ -59,10 +65,17 @@ namespace PostBot.Monitors.GitHub
                     return true;
                 case "PushEvent":
                     var pushPayload = activity.Payload as PushEventPayload;
+
+                    if (pushPayload == null)
+                    {
+                        _logger.LogError("Payload was unrecognizable for PushEvent.");
+                        return false;
+                    }
+
                     var branch = pushPayload.Ref.Replace("refs/heads/", string.Empty);
                     var branchCommitsUrl = "https://github.com/" + activity.Repo.Name + "/commits/" + branch;
                     var branchLink = $"<{branchCommitsUrl}|{branch}>";
-                    
+
                     if (pushPayload.Commits.Count > 1)
                     {
                         attachmentText = $"{textStart} pushed {pushPayload.Commits.Count} commits to {branchLink}";
@@ -77,6 +90,12 @@ namespace PostBot.Monitors.GitHub
                     return true;
                 case "PullRequestEvent":
                     var pullRequestPayload = activity.Payload as PullRequestEventPayload;
+                    if (pullRequestPayload == null)
+                    {
+                        _logger.LogError("Payload was unrecognizable for PullRequestEvent.");
+                        return false;
+                    }
+
                     var branchHead = pullRequestPayload.PullRequest.Head;
                     var branchBase = pullRequestPayload.PullRequest.Base;
                     var branchUrlStart = "https://github.com/" + activity.Repo.Name + "/tree/";
@@ -87,6 +106,11 @@ namespace PostBot.Monitors.GitHub
                     return true;
                 case "PullRequestReviewCommentEvent":
                     var pullRequestCommentPayload = activity.Payload as PullRequestCommentPayload;
+                    if (pullRequestCommentPayload == null)
+                    {
+                        _logger.LogError("Payload was unrecognizable for PullRequestReviewCommentEvent.");
+                        return false;
+                    }
 
                     attachmentText = $"{textStart} <{pullRequestCommentPayload.Comment.HtmlUrl}|commented> on " +
                             $"*{pullRequestCommentPayload.PullRequest.User.Login}*'s " +
