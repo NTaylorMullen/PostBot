@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PostBot.Configuration;
 
-namespace PostBot.Posters
+namespace PostBot.Slack
 {
     public class SlackClient : IDisposable
     {
@@ -19,7 +19,7 @@ namespace PostBot.Posters
         public SlackClient(ApplicationConfiguration configuration)
         {
             _httpClient = new HttpClient();
-            _configuration = configuration
+            _configuration = configuration;
         }
 
         public void Post(SlackMessage message)

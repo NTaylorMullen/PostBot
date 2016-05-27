@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace PostBot.Posters
+namespace PostBot.Slack
 {
     public class SlackAttachment
     {

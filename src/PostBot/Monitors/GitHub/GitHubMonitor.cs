@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging.Console;
+﻿using System.Linq;
+using Microsoft.Extensions.Logging.Console;
 using Octokit;
 using Octokit.Reactive;
 using PostBot.Configuration;
-using PostBot.DataFilters;
-using PostBot.Posters;
+using PostBot.Slack;
 
 namespace PostBot.Monitors.GitHub
 {
@@ -12,7 +12,6 @@ namespace PostBot.Monitors.GitHub
         private readonly ObservableActivitiesClient _client;
         private readonly GithubConfiguration _configuration;
         private readonly GitHubActivityProvider _eventObserver;
-        private readonly GitHubDataFilter _dataFilter;
         private readonly GitHubSlackMessageProvider _slackMessageProvider;
 
         public GitHubMonitor(SlackClient client, GithubConfiguration configuration)
@@ -29,8 +28,7 @@ namespace PostBot.Monitors.GitHub
 
             var logger = new ConsoleLogger("GitHub", (name, level) => true, includeScopes: true);
             _eventObserver = new GitHubActivityProvider(logger);
-            _dataFilter = new GitHubDataFilter();
-            _slackMessageProvider = new GitHubSlackMessageProvider(configuration);
+            _slackMessageProvider = new GitHubSlackMessageProvider(logger, configuration);
         }
 
         protected override void Poll()
@@ -38,10 +36,14 @@ namespace PostBot.Monitors.GitHub
             var observable = _client.Events.GetAllForOrganization(_configuration.Organization);
 
             var activities = _eventObserver.GetActivities(observable);
-            var filteredActivities = _dataFilter.Filter(activities);
-            var slackMessage = _slackMessageProvider.GetMessage(filteredActivities);
-
-            Client.Post(slackMessage);
+            if (activities.Any())
+            {
+                SlackMessage slackMessage;
+                if (_slackMessageProvider.TryGetMessage(activities, out slackMessage))
+                {
+                    Client.Post(slackMessage);
+                }
+            }
         }
     }
 }

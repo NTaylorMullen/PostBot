@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using PostBot.Configuration;
-using PostBot.Posters;
+using PostBot.Slack;
 
 namespace PostBot.Monitors
 {
-    public abstract class Monitor
+    public abstract class Monitor : IDisposable
     {
         private readonly Timer _timer;
         private int _polling;
@@ -37,6 +37,11 @@ namespace PostBot.Monitors
             {
                 Interlocked.Exchange(ref _polling, 0);
             }
+        }
+
+        public void Dispose()
+        {
+            Client.Dispose();
         }
     }
 }

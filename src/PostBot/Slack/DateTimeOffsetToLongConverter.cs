@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace PostBot.Posters
+namespace PostBot.Slack
 {
     public class DateTimeOffsetToLongConverter : JsonConverter
     {

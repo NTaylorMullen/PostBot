@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using PostBot.Configuration;
 using PostBot.Monitors.GitHub;
-using PostBot.Posters;
+using PostBot.Slack;
 
 namespace ConsoleApplication
 {
@@ -20,9 +20,11 @@ namespace ConsoleApplication
                 .Bind(configuration);
             var slackClient = new SlackClient(configuration);
 
-            var monitor = new GitHubMonitor(slackClient, configuration.GitHub);
-
-            Console.ReadLine();
+            using (var monitor = new GitHubMonitor(slackClient, configuration.GitHub))
+            {
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadLine();
+            }
         }
     }
 }

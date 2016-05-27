@@ -1,45 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Octokit;
 using PostBot.Configuration;
-using PostBot.Posters;
+using PostBot.Slack;
 
 namespace PostBot.Monitors.GitHub
 {
     public class GitHubSlackMessageProvider
     {
         private readonly GithubConfiguration _configuration;
+        private readonly GitHubSlackAttachmentTextProvider _attachmentTextProvider;
 
-        public GitHubSlackMessageProvider(GithubConfiguration configuration)
+        public GitHubSlackMessageProvider(ILogger logger, GithubConfiguration configuration)
         {
             _configuration = configuration;
+            _attachmentTextProvider = new GitHubSlackAttachmentTextProvider(logger, configuration);
         }
 
-        public SlackMessage GetMessage(IEnumerable<Activity> activities)
+        public bool TryGetMessage(IEnumerable<Activity> activities, out SlackMessage message)
         {
             var attachments = new List<SlackAttachment>();
 
             foreach (var activity in activities)
             {
+                string attachmentText;
+                if (!_attachmentTextProvider.TryGetAttachmentText(activity, out attachmentText))
+                {
+                    continue;
+                }
+
                 var attachment = new SlackAttachment
                 {
                     Footer = "GitHub",
                     TimeStamp = activity.CreatedAt,
                     HexSidelineColor = "#000000",
-                    Text = ""
+                    Text = attachmentText
                 };
+                attachments.Add(attachment);
             }
 
-            var message = new SlackMessage
+            if (attachments.Count == 0)
+            {
+                message = null;
+                return false;
+            }
+
+            message = new SlackMessage
             {
                 UserName = "GitHub",
                 IconUrl = _configuration.IconUrl,
                 Attachments = attachments
             };
 
-            return message;
+            return true;
         }
     }
 }
