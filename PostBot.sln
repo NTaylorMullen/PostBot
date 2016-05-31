@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F92F6612-89F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B5C6C6E7-9295-41D6-BCC2-841050D902B7}"
 	ProjectSection(SolutionItems) = preProject
-		PostBot\global.json = PostBot\global.json
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PostBot", "src\PostBot\PostBot.xproj", "{874DE246-C865-4A7C-8CFC-594CA88B7EA6}"

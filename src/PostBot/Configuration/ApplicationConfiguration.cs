@@ -4,28 +4,7 @@ namespace PostBot.Configuration
 {
     public class ApplicationConfiguration
     {
-        private string _postChannel;
-
-        public string PostChannel
-        {
-            get
-            {
-                return _postChannel;
-            }
-            set
-            {
-                if (value[0] != '#')
-                {
-                    _postChannel = $"#{value}";
-                }
-                else
-                {
-                    _postChannel = value;
-                }
-            }
-        }
-
-        public Uri WebHookUrl { get; set; }
+        public SlackConfiguration Slack { get; set; }
 
         public GithubConfiguration GitHub { get; set; }
 

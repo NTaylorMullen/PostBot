@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PostBot.Configuration;
 
@@ -14,9 +11,9 @@ namespace PostBot.Slack
     public class SlackClient : IDisposable
     {
         private readonly HttpClient _httpClient;
-        private readonly ApplicationConfiguration _configuration;
+        private readonly SlackConfiguration _configuration;
 
-        public SlackClient(ApplicationConfiguration configuration)
+        public SlackClient(SlackConfiguration configuration)
         {
             _httpClient = new HttpClient();
             _configuration = configuration;
@@ -44,6 +41,7 @@ namespace PostBot.Slack
                 }
                 catch
                 {
+                    // Ignore so we can retry
                 }
             }
         }
