@@ -18,7 +18,7 @@ namespace ConsoleApplication
                 .AddUserSecrets()
                 .Build()
                 .Bind(configuration);
-            var slackClient = new SlackMessageClient(configuration.Slack);
+            var slackClient = new SlackClient(configuration.Slack);
 
             using (var monitor = new GitHubMonitor(slackClient, configuration.GitHub))
             {

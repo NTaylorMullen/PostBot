@@ -1,9 +1,10 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using PostBot.Configuration;
 
 namespace PostBot.Slack
 {
-    public class SlackApiClient
+    public class SlackApiClient : IDisposable
     {
         private readonly HttpClient _httpClient;
 
@@ -14,6 +15,11 @@ namespace PostBot.Slack
 
         public void Delete(SlackMessage message)
         {
+        }
+
+        public void Dispose()
+        {
+            _httpClient.Dispose();
         }
     }
 }

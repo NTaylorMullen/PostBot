@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PostBot.Configuration;
 
 namespace PostBot.Slack
 {
-    public class SlackClient
+    public class SlackClient : IDisposable
     {
         private readonly SlackApiClient _apiClient;
         private readonly SlackConfiguration _configuration;
@@ -31,6 +32,12 @@ namespace PostBot.Slack
             _messageBuffer.Enqueue(message);
 
             _messageClient.Post(message);
+        }
+
+        public void Dispose()
+        {
+            _messageClient.Dispose();
+            _apiClient.Dispose();
         }
     }
 }
