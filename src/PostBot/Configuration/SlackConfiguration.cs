@@ -26,5 +26,11 @@ namespace PostBot.Configuration
         }
 
         public Uri WebHookUrl { get; set; }
+
+        public int MessageBufferSize { get; set; }
+
+        public string MessageDeletionToken { get; set; }
+
+        public string SlackApiUrl { get; set; }
     }
 }

@@ -1,54 +1,36 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using Newtonsoft.Json;
+﻿using System.Collections.Generic;
 using PostBot.Configuration;
 
 namespace PostBot.Slack
 {
-    public class SlackClient : IDisposable
+    public class SlackClient
     {
-        private readonly HttpClient _httpClient;
+        private readonly SlackApiClient _apiClient;
         private readonly SlackConfiguration _configuration;
+        private readonly Queue<SlackMessage> _messageBuffer;
+        private readonly SlackMessageClient _messageClient;
 
         public SlackClient(SlackConfiguration configuration)
         {
-            _httpClient = new HttpClient();
             _configuration = configuration;
+            _messageBuffer = new Queue<SlackMessage>(configuration.MessageBufferSize);
+            _messageClient = new SlackMessageClient(configuration);
+            _apiClient = new SlackApiClient(configuration);
         }
 
         public void Post(SlackMessage message)
         {
-            message.Channel = message.Channel ?? _configuration.PostChannel;
-            var json = JsonConvert.SerializeObject(message);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            int retryCount = 0;
-
-            while (retryCount++ < 5)
+            if (_messageBuffer.Count == _configuration.MessageBufferSize)
             {
-                try
-                {
-                    var result = _httpClient.PostAsync(_configuration.WebHookUrl, content).Result;
+                var oldMessage = _messageBuffer.Dequeue();
 
-                    if (result.StatusCode == HttpStatusCode.OK)
-                    {
-                        break;
-                    }
-
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
-                }
-                catch
-                {
-                    // Ignore so we can retry
-                }
+                // We delete an old message prior to posting a new message to not exhaust the Slack history limit.
+                _apiClient.Delete(oldMessage);
             }
-        }
 
-        public void Dispose()
-        {
-            _httpClient.Dispose();
+            _messageBuffer.Enqueue(message);
+
+            _messageClient.Post(message);
         }
     }
 }
