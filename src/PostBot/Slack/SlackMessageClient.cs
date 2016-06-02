@@ -10,40 +10,20 @@ namespace PostBot.Slack
 {
     public class SlackMessageClient : IDisposable
     {
-        private readonly HttpClient _httpClient;
         private readonly SlackConfiguration _configuration;
+        private readonly ResilientHttpClient _httpClient;
 
-        public SlackMessageClient(SlackConfiguration configuration)
+        public SlackMessageClient(ResilientHttpClient httpClient, SlackConfiguration configuration)
         {
-            _httpClient = new HttpClient();
             _configuration = configuration;
+            _httpClient = httpClient;
         }
 
         public void Post(SlackMessage message)
         {
-            message.Channel = message.Channel ?? _configuration.PostChannel;
-            var json = JsonConvert.SerializeObject(message);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            int retryCount = 0;
+            message.Channel = message.Channel ?? $"#{_configuration.PostChannel}";
 
-            while (retryCount++ < 5)
-            {
-                try
-                {
-                    var result = _httpClient.PostAsync(_configuration.WebHookUrl, content).Result;
-
-                    if (result.StatusCode == HttpStatusCode.OK)
-                    {
-                        break;
-                    }
-
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
-                }
-                catch
-                {
-                    // Ignore so we can retry
-                }
-            }
+            _httpClient.PostJsonWithRetry(_configuration.WebHookUrl, message);
         }
 
         public void Dispose()

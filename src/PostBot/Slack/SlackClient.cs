@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Console;
 using PostBot.Configuration;
 
 namespace PostBot.Slack
@@ -15,8 +16,11 @@ namespace PostBot.Slack
         {
             _configuration = configuration;
             _messageBuffer = new Queue<SlackMessage>(configuration.MessageBufferSize);
-            _messageClient = new SlackMessageClient(configuration);
-            _apiClient = new SlackApiClient(configuration);
+
+            var httpClient = new ResilientHttpClient();
+            _messageClient = new SlackMessageClient(httpClient, configuration);
+            var logger = new ConsoleLogger("SlackClient", (name, level) => true, includeScopes: true);
+            _apiClient = new SlackApiClient(httpClient, logger, configuration);
         }
 
         public void Post(SlackMessage message)
