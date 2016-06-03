@@ -25,7 +25,7 @@ namespace PostBot.Monitors.GitHub
             {
                 repoName = repoName.Substring(_configuration.Organization.Length + 1);
             }
-            var textStart = $"[<https://github.com/{activity.Repo.Name}|{repoName}>] *{activity.Actor.Login}* has";
+            var textStart = $"[<https://github.com/{activity.Repo.Name}|{repoName}>] *{SE(activity.Actor.Login)}* has";
 
             switch (activity.Type)
             {
@@ -38,8 +38,8 @@ namespace PostBot.Monitors.GitHub
                         return false;
                     }
 
-                    attachmentText = $"{textStart} *{issueEventPayload.Action}* <{issueEventPayload.Issue.HtmlUrl}|issue> `" +
-                        $"{issueEventPayload.Issue.Title}`";
+                    attachmentText = $"{textStart} *{SE(issueEventPayload.Action)}* <{issueEventPayload.Issue.HtmlUrl}|issue> `" +
+                        $"{SE(issueEventPayload.Issue.Title)}`";
 
                     return true;
                 case "IssueCommentEvent":
@@ -54,13 +54,13 @@ namespace PostBot.Monitors.GitHub
                     if (issueCommentEventPayload.Issue.PullRequest != null)
                     {
                         attachmentText = $"{textStart} <{issueCommentEventPayload.Comment.HtmlUrl}|commented> on " +
-                            $"*{issueCommentEventPayload.Issue.User.Login}*'s <{issueCommentEventPayload.Issue.HtmlUrl}|pull request> " +
-                            $"`{issueCommentEventPayload.Issue.Title}`";
+                            $"*{SE(issueCommentEventPayload.Issue.User.Login)}*'s <{issueCommentEventPayload.Issue.HtmlUrl}|pull request> " +
+                            $"`{SE(issueCommentEventPayload.Issue.Title)}`";
                     }
                     else
                     {
                         attachmentText = $"{textStart} <{issueCommentEventPayload.Comment.HtmlUrl}|commented> on <{issueCommentEventPayload.Issue.HtmlUrl}|issue> " +
-                            $"`{issueCommentEventPayload.Issue.Title}`";
+                            $"`{SE(issueCommentEventPayload.Issue.Title)}`";
                     }
                     return true;
                 case "PushEvent":
@@ -85,7 +85,7 @@ namespace PostBot.Monitors.GitHub
                         var commit = pushPayload.Commits[0];
                         var commitMessage = commit.Message.Split('\r', '\n')[0];
                         var branchCommitUrl = "https://github.com/" + activity.Repo.Name + "/commit/" + commit.Sha;
-                        attachmentText = $"{textStart} pushed <{branchCommitUrl}|commit> `{commitMessage}` to {branchLink}";
+                        attachmentText = $"{textStart} pushed <{branchCommitUrl}|commit> `{SE(commitMessage)}` to {branchLink}";
                     }
 
                     return true;
@@ -101,8 +101,8 @@ namespace PostBot.Monitors.GitHub
                     var branchBase = pullRequestPayload.PullRequest.Base;
                     var branchUrlStart = "https://github.com/" + activity.Repo.Name + "/tree/";
 
-                    attachmentText = $"{textStart} *{pullRequestPayload.Action}* <{pullRequestPayload.PullRequest.HtmlUrl}|pull request> " +
-                        $"`{pullRequestPayload.PullRequest.Title}` from <{branchUrlStart}{branchHead.Ref}|{branchHead.Ref}> => " +
+                    attachmentText = $"{textStart} *{SE(pullRequestPayload.Action)}* <{pullRequestPayload.PullRequest.HtmlUrl}|pull request> " +
+                        $"`{SE(pullRequestPayload.PullRequest.Title)}` from <{branchUrlStart}{branchHead.Ref}|{branchHead.Ref}> =&gt; " +
                         $"<{branchUrlStart}{branchBase.Url}|{branchBase.Ref}>";
                     return true;
                 case "PullRequestReviewCommentEvent":
@@ -114,9 +114,9 @@ namespace PostBot.Monitors.GitHub
                     }
 
                     attachmentText = $"{textStart} <{pullRequestCommentPayload.Comment.HtmlUrl}|commented> on " +
-                            $"*{pullRequestCommentPayload.PullRequest.User.Login}*'s " +
+                            $"*{SE(pullRequestCommentPayload.PullRequest.User.Login)}*'s " +
                             $"<{pullRequestCommentPayload.PullRequest.HtmlUrl}|pull request> " +
-                            $"`{pullRequestCommentPayload.PullRequest.Title}`";
+                            $"`{SE(pullRequestCommentPayload.PullRequest.Title)}`";
                     return true;
                 case "CommitCommentEvent":
                     var commitCommentPayload = activity.Payload as CommitCommentPayload;
@@ -126,6 +126,16 @@ namespace PostBot.Monitors.GitHub
             }
 
             return false;
+        }
+
+        private static string SE(string stringToSlackEncode)
+        {
+            stringToSlackEncode = stringToSlackEncode
+                .Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;");
+
+            return stringToSlackEncode;
         }
     }
 }

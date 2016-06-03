@@ -36,6 +36,8 @@ namespace PostBot.Slack
 
             if (messageToDeleteTimeStamp == null)
             {
+                System.Diagnostics.Debugger.Launch();
+                var test = FindMessageToDeleteTimeStamp(message);
                 _logger.LogError("Could not locate message for deletion: " + message.Attachments.First().Text);
                 return;
             }
@@ -63,7 +65,8 @@ namespace PostBot.Slack
         private string FindMessageToDeleteTimeStamp(SlackMessage message)
         {
             var attachmentTimeStamp = message.Attachments.Last().TimeStamp;
-            var messageToDeletesTimeStamp = ExtractMessageToDeleteTimeStamp(attachmentTimeStamp, _cachedMessageListResponse);
+            var attachmentToFind = message.Attachments.Last();
+            var messageToDeletesTimeStamp = ExtractMessageToDeleteTimeStamp(attachmentToFind, _cachedMessageListResponse);
 
             if (messageToDeletesTimeStamp != null)
             {
@@ -88,12 +91,14 @@ namespace PostBot.Slack
             var resultContent = result.Content.ReadAsStringAsync().Result;
             _cachedMessageListResponse = JsonConvert.DeserializeObject<SlackMessageListResponse>(resultContent);
 
-            messageToDeletesTimeStamp = ExtractMessageToDeleteTimeStamp(attachmentTimeStamp, _cachedMessageListResponse);
+            messageToDeletesTimeStamp = ExtractMessageToDeleteTimeStamp(attachmentToFind, _cachedMessageListResponse);
 
             return messageToDeletesTimeStamp;
         }
 
-        private string ExtractMessageToDeleteTimeStamp(DateTimeOffset timeStampQuery, SlackMessageListResponse messageListResponse)
+        private string ExtractMessageToDeleteTimeStamp(
+            SlackAttachment originalAttachment,
+            SlackMessageListResponse messageListResponse)
         {
             if (messageListResponse == null)
             {
@@ -103,7 +108,8 @@ namespace PostBot.Slack
             string messageToDeletesTimeStamp = null;
             foreach (var responseMessage in messageListResponse.Messages)
             {
-                if (responseMessage.Attachments?.Any(attachment => attachment.TimeStamp == timeStampQuery) == true)
+                if (responseMessage.Attachments?.Any(attachment => attachment.TimeStamp == originalAttachment.TimeStamp) == true &&
+                    responseMessage.Attachments?.Any(attachment => string.Equals(attachment.Text, originalAttachment.Text, StringComparison.Ordinal)) == true)
                 {
                     messageToDeletesTimeStamp = responseMessage.TimeStamp;
                 }

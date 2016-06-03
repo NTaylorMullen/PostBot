@@ -11,5 +11,7 @@ namespace PostBot.Slack.ApiResponses
         [JsonProperty("ts")]
         [JsonConverter(typeof(DateTimeOffsetToLongConverter))]
         public DateTimeOffset TimeStamp { get; set; }
+
+        public string Text { get; set; }
     }
 }
