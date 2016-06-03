@@ -29,7 +29,15 @@ namespace PostBot.Monitors.GitHub
             var observedActivities = activityObserver.ObservedActivities;
             if (observedActivities.Count > 0)
             {
-                _lastObservation = observedActivities[observedActivities.Count - 1].CreatedAt.AddMilliseconds(1);
+                foreach (var observedActivity in observedActivities)
+                {
+                    if (observedActivity.CreatedAt > _lastObservation)
+                    {
+                        _lastObservation = observedActivity.CreatedAt;
+                    }
+                }
+
+                _lastObservation = _lastObservation.AddMilliseconds(1);
             }
 
             return activityObserver.ObservedActivities;
