@@ -12,12 +12,13 @@ namespace PostBot.Slack
     public class SlackApiClient : IDisposable
     {
         private const string ListChannelsApi = "channels.list";
-        private const string ListMessagesApi = "channels.history";
+        private const string ChannelMessageHistoryApi = "channels.history";
         private const string DeleteMessageApi = "chat.delete";
         private readonly SlackConfiguration _configuration;
         private readonly ResilientHttpClient _httpClient;
         private readonly ILogger _logger;
         private string _channelId;
+        private SlackMessageListResponse _cachedMessageListResponse;
 
         public SlackApiClient(ResilientHttpClient httpClient, ILogger logger, SlackConfiguration configuration)
         {
@@ -31,7 +32,27 @@ namespace PostBot.Slack
 
         public void Delete(SlackMessage message)
         {
-            var messageTimeStamp = FindMessageTimeStamp(message);
+            var messageToDeleteTimeStamp = FindMessageToDeleteTimeStamp(message);
+
+            if (messageToDeleteTimeStamp == null)
+            {
+                _logger.LogError("Could not locate message for deletion: " + message.Attachments.First().Text);
+                return;
+            }
+
+            var queryParameters = new Dictionary<string, string>
+            {
+                ["as_user"] = "true",
+                ["channel"] = _channelId,
+                ["ts"] = messageToDeleteTimeStamp
+            };
+
+            var authorizedQuery = GetAuthorizedQuery(queryParameters);
+            var deleteMessageUri = new Uri(_configuration.SlackApiUrl + DeleteMessageApi + authorizedQuery);
+            _httpClient.PostJsonWithRetry(deleteMessageUri);
+
+            _logger.LogInformation("Deleting message: " + message.Attachments?.First().Text);
+            _logger.LogInformation("Uri to delete message: " + deleteMessageUri.ToString());
         }
 
         public void Dispose()
@@ -39,15 +60,56 @@ namespace PostBot.Slack
             _httpClient.Dispose();
         }
 
-        private int FindMessageTimeStamp(SlackMessage message)
+        private string FindMessageToDeleteTimeStamp(SlackMessage message)
         {
-            var attachmentTimeStamp = message.Attachments.First().TimeStamp;
-            var unixTimeStamp = attachmentTimeStamp.ToUnixTimeSeconds();
-            var queryParameters = new Dictionary<string, string>();
-            queryParameters["count"] = (2 * _configuration.MessageBufferSize).ToString();
-            queryParameters["oldest"] = (unixTimeStamp - 1).ToString();
+            var attachmentTimeStamp = message.Attachments.Last().TimeStamp;
+            var messageToDeletesTimeStamp = ExtractMessageToDeleteTimeStamp(attachmentTimeStamp, _cachedMessageListResponse);
 
-            return 0;
+            if (messageToDeletesTimeStamp != null)
+            {
+                return messageToDeletesTimeStamp;
+            }
+
+            var unixTimeStamp = attachmentTimeStamp.ToUnixTimeSeconds();
+            var queryParameters = new Dictionary<string, string>
+            {
+                // Download 2x the buffer in-case there was chatter in the channel we're posting to.
+                ["count"] = (2 * _configuration.MessageBufferSize).ToString(),
+
+                // Oldest should be 1 second less than the timestamp we're looking for to ensure we captuer it.
+                ["oldest"] = (unixTimeStamp - 10).ToString(),
+                ["inclusive"] = "1",
+                ["channel"] = _channelId
+            };
+
+            var authorizedQuery = GetAuthorizedQuery(queryParameters);
+            var channelMessageHistoryUri = new Uri(_configuration.SlackApiUrl + ChannelMessageHistoryApi + authorizedQuery);
+            var result = _httpClient.PostJsonWithRetry(channelMessageHistoryUri);
+            var resultContent = result.Content.ReadAsStringAsync().Result;
+            _cachedMessageListResponse = JsonConvert.DeserializeObject<SlackMessageListResponse>(resultContent);
+
+            messageToDeletesTimeStamp = ExtractMessageToDeleteTimeStamp(attachmentTimeStamp, _cachedMessageListResponse);
+
+            return messageToDeletesTimeStamp;
+        }
+
+        private string ExtractMessageToDeleteTimeStamp(DateTimeOffset timeStampQuery, SlackMessageListResponse messageListResponse)
+        {
+            if (messageListResponse == null)
+            {
+                return null;
+            }
+
+            string messageToDeletesTimeStamp = null;
+            foreach (var responseMessage in messageListResponse.Messages)
+            {
+                if (responseMessage.Attachments?.Any(attachment => attachment.TimeStamp == timeStampQuery) == true)
+                {
+                    messageToDeletesTimeStamp = responseMessage.TimeStamp;
+                }
+            }
+
+            return messageToDeletesTimeStamp;
         }
 
         private void InitializeChannelId(string channelName)
@@ -56,7 +118,7 @@ namespace PostBot.Slack
             var listChannelsUri = new Uri(_configuration.SlackApiUrl + ListChannelsApi + authorizedQuery);
             var result = _httpClient.PostJsonWithRetry(listChannelsUri);
             var resultContent = result.Content.ReadAsStringAsync().Result;
-            var channelList = JsonConvert.DeserializeObject<SlackChannelList>(resultContent);
+            var channelList = JsonConvert.DeserializeObject<SlackChannelListResponse>(resultContent);
             var postChannel = channelList.Channels.Single(
                 channel => string.Equals(channel.Name, _configuration.PostChannel, StringComparison.Ordinal));
             _channelId = postChannel.Id;

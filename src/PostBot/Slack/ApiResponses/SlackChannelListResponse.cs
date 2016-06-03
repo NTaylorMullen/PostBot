@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace PostBot.Slack.ApiResponses
 {
-    public class SlackChannel
+    public class SlackChannelListResponse
     {
-        public string Id { get; set; }
-
-        public string Name { get; set; }
+        public IEnumerable<SlackChannelResponse> Channels { get; set; }
     }
 }

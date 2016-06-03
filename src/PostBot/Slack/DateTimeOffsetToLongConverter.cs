@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PostBot.Slack
 {
@@ -17,7 +18,12 @@ namespace PostBot.Slack
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            var textReader = reader as JsonTextReader;
+            var unixTime = long.Parse(textReader.Value.ToString());
+
+            var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+
+            return dateTimeOffset;
         }
     }
 }
