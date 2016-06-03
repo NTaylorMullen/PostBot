@@ -31,10 +31,6 @@ namespace PostBot.Monitors.GitHub
             {
                 _lastObservation = observedActivities[observedActivities.Count - 1].CreatedAt.AddMilliseconds(1);
             }
-            else
-            {
-                _lastObservation = DateTime.UtcNow;
-            }
 
             return activityObserver.ObservedActivities;
         }
