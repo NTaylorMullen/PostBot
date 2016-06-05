@@ -10,6 +10,9 @@ namespace PostBot.Slack
         [JsonProperty("text")]
         public string Text { get; set; }
 
+        [JsonProperty("fallback")]
+        public string Fallback { get; set; }
+
         [JsonProperty("mrkdwn_in")]
         public IEnumerable<string> MarkdownIn { get; } = new[] { "text" };
 

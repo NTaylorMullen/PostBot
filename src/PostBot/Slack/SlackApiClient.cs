@@ -109,7 +109,7 @@ namespace PostBot.Slack
             foreach (var responseMessage in messageListResponse.Messages)
             {
                 if (responseMessage.Attachments?.Any(attachment => attachment.TimeStamp == originalAttachment.TimeStamp) == true &&
-                    responseMessage.Attachments?.Any(attachment => string.Equals(attachment.Text, originalAttachment.Text, StringComparison.Ordinal)) == true)
+                    responseMessage.Attachments?.Any(attachment => string.Equals(attachment.Fallback, originalAttachment.Fallback, StringComparison.Ordinal)) == true)
                 {
                     messageToDeletesTimeStamp = responseMessage.TimeStamp;
                 }

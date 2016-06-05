@@ -22,6 +22,13 @@ namespace PostBot.Slack
         public void Post(SlackMessage message)
         {
             message.Channel = message.Channel ?? $"#{_configuration.PostChannel}";
+            var messageGuid = Guid.NewGuid().ToString();
+
+            // Mark each attachment with a message based GUID so we can find them later
+            foreach (var attachment in message.Attachments)
+            {
+                attachment.Fallback = messageGuid;
+            }
 
             _httpClient.PostJsonWithRetry(_configuration.WebHookUrl, message);
         }
