@@ -105,11 +105,13 @@ namespace PostBot.Slack
                 return null;
             }
 
+            var originalAttachmentFallback = originalAttachment.Fallback;
+            var guidMarker = originalAttachmentFallback.Substring(originalAttachmentFallback.Length - 36);
             string messageToDeletesTimeStamp = null;
             foreach (var responseMessage in messageListResponse.Messages)
             {
                 if (responseMessage.Attachments?.Any(attachment => attachment.TimeStamp == originalAttachment.TimeStamp) == true &&
-                    responseMessage.Attachments?.Any(attachment => string.Equals(attachment.Fallback, originalAttachment.Fallback, StringComparison.Ordinal)) == true)
+                    responseMessage.Attachments?.Any(attachment => attachment.Fallback?.EndsWith(guidMarker, StringComparison.Ordinal) == true) == true)
                 {
                     messageToDeletesTimeStamp = responseMessage.TimeStamp;
                 }

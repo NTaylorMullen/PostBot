@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using Newtonsoft.Json;
+using System.Linq;
 using PostBot.Configuration;
 
 namespace PostBot.Slack
@@ -27,7 +23,8 @@ namespace PostBot.Slack
             // Mark each attachment with a message based GUID so we can find them later
             foreach (var attachment in message.Attachments)
             {
-                attachment.Fallback = messageGuid;
+                var guidSeparator = string.Concat(Enumerable.Repeat(Environment.NewLine, 4));
+                attachment.Fallback = $"{attachment.Text}{guidSeparator}{messageGuid}";
             }
 
             _httpClient.PostJsonWithRetry(_configuration.WebHookUrl, message);

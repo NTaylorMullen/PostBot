@@ -41,6 +41,7 @@ namespace PostBot.Monitors
 
         public void Dispose()
         {
+            _timer.Dispose();
             Client.Dispose();
         }
     }
